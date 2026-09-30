@@ -1,0 +1,39 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Meetings{% endblock %}
+{% block page_title %}Meetings{% endblock %}
+{% block content %}
+<div class="panel panel-flush mb-4">
+  <div class="panel-head"><h2>Upcoming</h2></div>
+  {% if upcoming %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Meeting</th><th>When</th><th>Where</th></tr></thead>
+      <tbody>
+      {% for m in upcoming %}
+        <tr>
+          <td>
+            <span class="cell-title">{{ m.title }}</span><span class="cell-sub">{{ m.course.name }}</span>
+            {% if m.agenda %}<span class="cell-sub">{{ m.agenda|truncatechars:140 }}</span>{% endif %}
+          </td>
+          <td>{{ m.scheduled_at|date:"D, d M, h:i A" }}<span class="cell-sub">{{ m.duration_minutes }} min, starts in {{ m.scheduled_at|timeuntil }}</span></td>
+          <td>{% if m.link %}<a class="btn btn-sm btn-accent" href="{{ m.link }}" target="_blank" rel="noopener noreferrer">Join meeting</a>{% endif %}{% if m.location %}<span class="cell-sub">{{ m.location }}</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">No upcoming meetings. Your teachers will schedule them here.</div>
+  {% endif %}
+</div>
+{% if past %}
+<div class="panel panel-flush">
+  <div class="panel-head"><h2>Past meetings</h2></div>
+  <div class="table-responsive">
+    <table class="table align-middle"><tbody>
+      {% for m in past %}<tr><td><span class="cell-title">{{ m.title }}</span><span class="cell-sub">{{ m.course.name }}</span></td><td>{{ m.scheduled_at|date:"D, d M Y, h:i A" }}</td></tr>{% endfor %}
+    </tbody></table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

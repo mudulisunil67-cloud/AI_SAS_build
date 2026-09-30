@@ -1,0 +1,57 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Subscribers{% endblock %}
+{% block page_title %}Subscribers{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-outline-primary btn-sm" href="{% url 'myadmin:subscriber_export' %}"><i class="bi bi-download"></i> Export CSV</a>
+{% endblock %}
+{% block content %}
+<div class="stat-strip" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+  <div class="stat"><span class="stat-value">{{ active_count }}</span><span class="stat-label">Active subscribers</span></div>
+  <div class="stat"><span class="stat-value">{{ total_count }}</span><span class="stat-label">Total sign-ups</span></div>
+</div>
+
+<form method="get" class="filter-bar row g-2 mb-3" role="search">
+  <div class="col-md-6">
+    <label class="visually-hidden" for="q">Search subscribers</label>
+    <input type="search" class="form-control" id="q" name="q" value="{{ q }}" placeholder="Search by email">
+  </div>
+  <div class="col-md-3 d-flex gap-2">
+    <button class="btn btn-primary flex-fill" type="submit">Search</button>
+    {% if q %}<a class="btn btn-outline-secondary" href="{% url 'myadmin:subscriber_list' %}">Clear</a>{% endif %}
+  </div>
+</form>
+
+<div class="panel panel-flush">
+  {% if page_obj.object_list %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Email</th><th>Status</th><th>Subscribed</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+      {% for s in page_obj %}
+        <tr>
+          <td class="cell-title">{{ s.email }}</td>
+          <td>{% if s.is_active %}<span class="pill pill-active">Active</span>{% else %}<span class="pill pill-inactive">Unsubscribed</span>{% endif %}</td>
+          <td>{{ s.subscribed_at|date:"d M Y, h:i A" }}</td>
+          <td class="text-end">
+            <div class="d-inline-flex gap-1">
+              <form method="post" action="{% url 'myadmin:subscriber_toggle' s.pk %}">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-outline-secondary" type="submit">{% if s.is_active %}Unsubscribe{% else %}Resubscribe{% endif %}</button>
+              </form>
+              <form method="post" action="{% url 'myadmin:subscriber_delete' s.pk %}" data-confirm="Remove {{ s.email }} from the list?">
+                {% csrf_token %}
+                <button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Remove {{ s.email }}"><i class="bi bi-trash"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty m-3">{% if q %}No subscribers match that search.{% else %}Nobody has subscribed yet. The subscribe form sits at the bottom of the front page.{% endif %}</div>
+  {% endif %}
+</div>
+{% include 'include/pagination.html' %}
+{% endblock %}

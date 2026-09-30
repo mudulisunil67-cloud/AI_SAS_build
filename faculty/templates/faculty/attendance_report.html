@@ -1,0 +1,35 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Attendance report{% endblock %}
+{% block page_title %}Attendance: {{ course.name }}{% endblock %}
+{% block page_actions %}<a class="btn btn-primary btn-sm" href="{% url 'faculty:attendance_mark' %}?course={{ course.pk }}">Take attendance</a>{% endblock %}
+{% block content %}
+<p class="text-muted">{{ total_days }} day{{ total_days|pluralize }} recorded.{% if total_days > dates|length %} Showing the latest {{ dates|length }}; percentages use every day.{% endif %} Late counts as attended.</p>
+<div class="panel panel-flush">
+  {% if dates %}
+  <div class="table-responsive">
+    <table class="table align-middle matrix">
+      <thead>
+        <tr>
+          <th>Student</th>
+          {% for d in dates %}<th><a href="{% url 'faculty:attendance_mark' %}?course={{ course.pk }}&amp;date={{ d|date:'Y-m-d' }}" title="Edit {{ d|date:'d M Y' }}">{{ d|date:"d M" }}</a></th>{% endfor %}
+          <th>Overall</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for row in rows %}
+        <tr>
+          <td class="cell-title">{{ row.student.display_name }}</td>
+          {% for c in row.cells %}
+          <td>{% if c == 'present' %}<span class="att-cell present" title="Present">P</span>{% elif c == 'absent' %}<span class="att-cell absent" title="Absent">A</span>{% elif c == 'late' %}<span class="att-cell late" title="Late">L</span>{% else %}<span class="att-cell none" title="Not recorded">-</span>{% endif %}</td>
+          {% endfor %}
+          <td>{% if row.stats %}<span class="{% if row.stats.percent < 75 %}pct-low{% endif %}">{{ row.stats.percent }}%</span>{% else %}-{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty m-3">No attendance has been taken for this course yet. <a href="{% url 'faculty:attendance_mark' %}?course={{ course.pk }}">Take attendance</a></div>
+  {% endif %}
+</div>
+{% endblock %}

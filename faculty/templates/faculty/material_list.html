@@ -1,0 +1,44 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Daily classes{% endblock %}
+{% block page_title %}Daily classes{% endblock %}
+{% block page_actions %}<a class="btn btn-primary btn-sm" href="{% url 'faculty:material_create' %}"><i class="bi bi-upload"></i> Add a class</a>{% endblock %}
+{% block content %}
+<form method="get" class="d-flex gap-2 mb-3 flex-wrap">
+  <label class="visually-hidden" for="course">Filter by course</label>
+  <select class="form-select w-auto" id="course" name="course" onchange="this.form.submit()">
+    <option value="">All courses</option>
+    {% for c in courses %}<option value="{{ c.pk }}" {% if selected_course == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+  </select>
+  <noscript><button class="btn btn-outline-primary" type="submit">Filter</button></noscript>
+</form>
+
+<div class="panel panel-flush">
+  {% if page_obj.object_list %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Class</th><th>Date</th><th>Material</th><th class="text-end"></th></tr></thead>
+      <tbody>
+      {% for m in page_obj %}
+        <tr>
+          <td><span class="cell-title">{{ m.title }}</span><span class="cell-sub">{{ m.course.name }}</span></td>
+          <td>{{ m.class_date|date:"D, d M Y" }}</td>
+          <td>
+            {% if m.file %}<a href="{% url 'material_download' m.pk %}" target="_blank" rel="noopener"><i class="bi bi-file-earmark"></i> {{ m.filename }}</a>{% endif %}
+            {% if m.link %}<div><a href="{{ m.link }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-link-45deg"></i> Open link</a></div>{% endif %}
+          </td>
+          <td class="text-end">
+            <form method="post" action="{% url 'faculty:material_delete' m.pk %}" data-confirm="Delete this class entry?">
+              {% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty m-3">No class entries yet. <a href="{% url 'faculty:material_create' %}">Add today's class</a> so students can open the notes.</div>
+  {% endif %}
+</div>
+{% include 'include/pagination.html' %}
+{% endblock %}

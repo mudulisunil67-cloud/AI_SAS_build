@@ -1,0 +1,38 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Review submission{% endblock %}
+{% block page_title %}{{ submission.student.display_name }}{% endblock %}
+{% block page_actions %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'faculty:exam_submissions' submission.exam_id %}">Back to submissions</a>{% endblock %}
+{% block content %}
+<p class="text-muted">{{ submission.exam.title }} &middot; {{ submission.exam.course.name }} &middot; submitted {{ submission.submitted_at|date:"d M Y, h:i A" }}</p>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  {% for a in answers %}
+  <div class="panel mb-3 {% if a.question.question_type == 'mcq' %}{% if a.is_correct %}answer-ok{% else %}answer-bad{% endif %}{% elif not a.is_graded %}answer-wait{% endif %}">
+    <div class="d-flex justify-content-between gap-3 flex-wrap">
+      <div class="flex-grow-1" style="min-width:240px">
+        <div class="cell-title mb-2">{{ forloop.counter }}. {{ a.question.text|linebreaksbr }}</div>
+        {% if a.question.question_type == 'mcq' %}
+          <div>Student chose:
+            {% if a.selected_option %}<strong>{{ a.selected_option }}. {{ a.selected_text }}</strong>{% else %}<em class="text-muted">no answer</em>{% endif %}
+          </div>
+          <div class="text-muted small">Correct answer: {{ a.question.correct_option }}. {{ a.question.correct_text }}</div>
+        {% else %}
+          <div class="border rounded p-3 bg-light">{% if a.text_answer %}{{ a.text_answer|linebreaksbr }}{% else %}<em class="text-muted">No answer written</em>{% endif %}</div>
+        {% endif %}
+      </div>
+      <div style="width:150px">
+        <label class="form-label" for="marks_{{ a.pk }}">Marks (max {{ a.question.marks }})</label>
+        <input class="form-control" type="number" id="marks_{{ a.pk }}" name="marks_{{ a.pk }}" min="0" max="{{ a.question.marks }}" step="0.5" value="{{ a.marks_awarded|floatformat:'-2' }}" required>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="panel mb-3">
+    <label class="form-label" for="feedback">Feedback for the student (optional)</label>
+    <textarea class="form-control" id="feedback" name="feedback" rows="3">{{ submission.feedback }}</textarea>
+  </div>
+  <button class="btn btn-primary" type="submit">Save marks</button>
+</form>
+{% endblock %}

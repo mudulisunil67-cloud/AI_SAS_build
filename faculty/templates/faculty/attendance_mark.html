@@ -1,0 +1,73 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Attendance{% endblock %}
+{% block page_title %}Take attendance{% endblock %}
+{% block page_actions %}
+  {% if course %}<a class="btn btn-outline-primary btn-sm" href="{% url 'faculty:attendance_report' course.pk %}">View report</a>{% endif %}
+{% endblock %}
+{% block content %}
+<div class="panel mb-4">
+  <form method="get" class="row g-3 align-items-end">
+    <div class="col-md-5">
+      <label class="form-label" for="course">Course</label>
+      <select class="form-select" id="course" name="course" required>
+        <option value="">Choose a course</option>
+        {% for c in courses %}<option value="{{ c.pk }}" {% if course and course.pk == c.pk %}selected{% endif %}>{{ c.name }} ({{ c.code }})</option>{% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label" for="date">Date</label>
+      <input class="form-control" type="date" id="date" name="date" value="{{ att_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" required>
+    </div>
+    <div class="col-md-3"><button class="btn btn-primary w-100" type="submit">Load students</button></div>
+  </form>
+</div>
+
+{% if not courses %}
+  <div class="empty">You need a course before you can take attendance. <a href="{% url 'faculty:course_create' %}">Create a course</a></div>
+{% elif course %}
+  {% if rows %}
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="course" value="{{ course.pk }}">
+    <input type="hidden" name="date" value="{{ att_date|date:'Y-m-d' }}">
+    <div class="panel panel-flush">
+      <div class="panel-head">
+        <h2>{{ course.name }}, {{ att_date|date:"D, d M Y" }}</h2>
+        <div class="d-flex gap-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-mark-all="present">All present</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" data-mark-all="absent">All absent</button>
+        </div>
+      </div>
+      {% if already_marked %}<div class="px-3 pb-2 small text-muted">Attendance was already saved for this date. Saving again updates it.</div>{% endif %}
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>Student</th><th>Status</th></tr></thead>
+          <tbody>
+          {% for row in rows %}
+            <tr class="mark-row">
+              <td><span class="cell-title">{{ row.student.display_name }}</span><span class="cell-sub">{{ row.student.username }}</span></td>
+              <td>
+                <div class="btn-group" role="group" aria-label="Attendance for {{ row.student.display_name }}">
+                  <input type="radio" class="btn-check" name="status_{{ row.student.pk }}" id="p{{ row.student.pk }}" value="present" {% if row.status == 'present' %}checked{% endif %}>
+                  <label class="btn btn-outline-present" for="p{{ row.student.pk }}">Present</label>
+                  <input type="radio" class="btn-check" name="status_{{ row.student.pk }}" id="a{{ row.student.pk }}" value="absent" {% if row.status == 'absent' %}checked{% endif %}>
+                  <label class="btn btn-outline-absent" for="a{{ row.student.pk }}">Absent</label>
+                  <input type="radio" class="btn-check" name="status_{{ row.student.pk }}" id="l{{ row.student.pk }}" value="late" {% if row.status == 'late' %}checked{% endif %}>
+                  <label class="btn btn-outline-late" for="l{{ row.student.pk }}">Late</label>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="p-3 border-top"><button class="btn btn-primary" type="submit">Save attendance</button></div>
+    </div>
+  </form>
+  {% else %}
+  <div class="empty">No students are enrolled in {{ course.name }} yet. Students enroll from their "My courses" page.</div>
+  {% endif %}
+{% else %}
+  <div class="empty">Choose a course and a date to see the class list.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Daily classes{% endblock %}
+{% block page_title %}Daily classes{% endblock %}
+{% block content %}
+<form method="get" class="mb-3">
+  <label class="visually-hidden" for="course">Filter by course</label>
+  <select class="form-select w-auto" id="course" name="course" onchange="this.form.submit()">
+    <option value="">All my courses</option>
+    {% for c in courses %}<option value="{{ c.pk }}" {% if selected_course == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+  </select>
+</form>
+
+<div class="panel panel-flush">
+  {% if page_obj.object_list %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Class</th><th>Date</th><th>Notes and files</th></tr></thead>
+      <tbody>
+      {% for m in page_obj %}
+        <tr>
+          <td>
+            <span class="cell-title">{{ m.title }}</span>
+            <span class="cell-sub">{{ m.course.name }}{% if m.uploaded_by %} &middot; {{ m.uploaded_by.display_name }}{% endif %}</span>
+            {% if m.description %}<span class="cell-sub">{{ m.description|truncatechars:140 }}</span>{% endif %}
+          </td>
+          <td>{{ m.class_date|date:"D, d M Y" }}</td>
+          <td>
+            {% if m.file %}<div><a href="{% url 'material_download' m.pk %}" target="_blank" rel="noopener"><i class="bi bi-file-earmark"></i> {{ m.filename }}</a> <a class="small ms-1" href="{% url 'material_download' m.pk %}?dl=1">Download</a></div>{% endif %}
+            {% if m.link %}<div><a href="{{ m.link }}" target="_blank" rel="noopener noreferrer"><i class="bi bi-link-45deg"></i> Open link</a></div>{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty m-3">No class notes yet. When a teacher uploads a class for your courses, it will show up here.</div>
+  {% endif %}
+</div>
+{% include 'include/pagination.html' %}
+{% endblock %}

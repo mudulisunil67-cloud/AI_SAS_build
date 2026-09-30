@@ -1,0 +1,47 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Meetings{% endblock %}
+{% block page_title %}Meetings{% endblock %}
+{% block page_actions %}<a class="btn btn-primary btn-sm" href="{% url 'faculty:meeting_create' %}"><i class="bi bi-plus-lg"></i> Schedule meeting</a>{% endblock %}
+{% block content %}
+<div class="panel panel-flush mb-4">
+  <div class="panel-head"><h2>Upcoming</h2></div>
+  {% if upcoming %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Meeting</th><th>When</th><th>Where</th><th class="text-end"></th></tr></thead>
+      <tbody>
+      {% for m in upcoming %}
+        <tr>
+          <td><span class="cell-title">{{ m.title }}</span><span class="cell-sub">{{ m.course.name }}</span></td>
+          <td>{{ m.scheduled_at|date:"D, d M, h:i A" }}<span class="cell-sub">{{ m.duration_minutes }} min, starts in {{ m.scheduled_at|timeuntil }}</span></td>
+          <td>{% if m.link %}<a href="{{ m.link }}" target="_blank" rel="noopener noreferrer">Join link</a>{% endif %}{% if m.location %}<span class="cell-sub">{{ m.location }}</span>{% endif %}</td>
+          <td class="text-end">
+            <form method="post" action="{% url 'faculty:meeting_delete' m.pk %}" data-confirm="Cancel this meeting?">
+              {% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Cancel</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">No upcoming meetings. <a href="{% url 'faculty:meeting_create' %}">Schedule one</a> and every student in the course will see it.</div>
+  {% endif %}
+</div>
+
+{% if past %}
+<div class="panel panel-flush">
+  <div class="panel-head"><h2>Past meetings</h2></div>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <tbody>
+      {% for m in past %}
+        <tr><td><span class="cell-title">{{ m.title }}</span><span class="cell-sub">{{ m.course.name }}</span></td><td>{{ m.scheduled_at|date:"D, d M Y, h:i A" }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}{{ exam.title }}{% endblock %}
+{% block page_title %}{{ exam.title }}{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-outline-primary btn-sm" href="{% url 'faculty:exam_submissions' exam.pk %}">Submissions{% if pending_count %} ({{ pending_count }} to review){% endif %}</a>
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'faculty:exam_edit' exam.pk %}">Edit</a>
+  <form method="post" action="{% url 'faculty:exam_toggle_publish' exam.pk %}">
+    {% csrf_token %}
+    <button class="btn btn-sm {% if exam.is_published %}btn-outline-secondary{% else %}btn-accent{% endif %}" type="submit">{% if exam.is_published %}Unpublish{% else %}Publish{% endif %}</button>
+  </form>
+  <form method="post" action="{% url 'faculty:exam_delete' exam.pk %}" data-confirm="Delete this exam with all its questions and submissions?">
+    {% csrf_token %}<button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+  </form>
+{% endblock %}
+{% block content %}
+<div class="stat-strip">
+  <div class="stat"><span class="stat-value" style="font-size:1.15rem">{{ exam.course.name }}</span><span class="stat-label">Course</span></div>
+  <div class="stat"><span class="stat-value" style="font-size:1.15rem">{{ exam.scheduled_at|date:"d M, h:i A" }}</span><span class="stat-label">Starts</span></div>
+  <div class="stat"><span class="stat-value">{{ exam.duration_minutes }}</span><span class="stat-label">Minutes</span></div>
+  <div class="stat"><span class="stat-value">{{ exam.total_marks }}</span><span class="stat-label">Total marks</span></div>
+  <div class="stat"><span class="stat-value">{{ submission_count }}</span><span class="stat-label">Submissions</span></div>
+</div>
+
+{% if not exam.is_published %}
+<div class="alert alert-warning" role="status">This exam is a draft. Students can't see it until you publish it.</div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-xl-7">
+    <div class="panel panel-flush">
+      <div class="panel-head"><h2>Questions ({{ questions|length }})</h2></div>
+      {% if questions %}
+      <ul class="list-plain px-3 pb-3">
+        {% for q in questions %}
+        <li>
+          <div class="d-flex justify-content-between gap-3">
+            <div>
+              <div class="cell-title">{{ forloop.counter }}. {{ q.text|linebreaksbr }}</div>
+              {% if q.question_type == 'mcq' %}
+                <ul class="list-unstyled small mt-1 mb-0">
+                  {% for letter, text in q.choices %}
+                  <li>{{ letter }}. {{ text }}{% if letter == q.correct_option %} <span class="pill pill-graded">Correct</span>{% endif %}</li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <span class="cell-sub">Written answer, reviewed by you</span>
+              {% endif %}
+            </div>
+            <div class="text-end">
+              <span class="pill">{{ q.marks }} mark{{ q.marks|pluralize }}</span>
+              <form method="post" action="{% url 'faculty:question_delete' exam.pk q.pk %}" data-confirm="Delete this question?" class="mt-2">
+                {% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+              </form>
+            </div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="empty">No questions yet. Add the first one using the form.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-xl-5">
+    <div class="panel">
+      <div class="panel-head"><h2>Add a question</h2></div>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include 'include/form_fields.html' %}
+        <button class="btn btn-primary" type="submit">Add question</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

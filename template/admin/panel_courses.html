@@ -1,0 +1,32 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Courses{% endblock %}
+{% block page_title %}All courses{% endblock %}
+{% block content %}
+<div class="panel panel-flush">
+  {% if courses %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Course</th><th>Teacher</th><th>Students</th><th>Exams</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+      {% for course in courses %}
+        <tr>
+          <td><span class="cell-title">{{ course.name }}</span><span class="cell-sub">{{ course.code }}</span></td>
+          <td>{% if course.teacher %}{{ course.teacher.display_name }}{% else %}<span class="text-muted">Unassigned</span>{% endif %}</td>
+          <td>{{ course.student_count }}</td>
+          <td>{{ course.exam_count }}</td>
+          <td class="text-end">
+            <form method="post" action="{% url 'myadmin:course_delete' course.pk %}" data-confirm="Delete {{ course.name }}? Its exams, marks, attendance and class entries will be deleted too.">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger" type="submit"><i class="bi bi-trash"></i> Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty m-3">No courses have been created yet. Teachers create their own courses from their dashboard.</div>
+  {% endif %}
+</div>
+{% endblock %}

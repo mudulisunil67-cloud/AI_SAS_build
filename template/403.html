@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Access denied{% endblock %}
+{% block body %}
+<div class="auth-shell">
+  <aside class="auth-aside">
+    <a class="brand" href="/"><span class="brand-mark"><i class="bi bi-check2"></i></span>AI SAS</a>
+  </aside>
+  <section class="auth-main">
+    <div class="auth-box">
+      <h1>You don't have access to this page</h1>
+      <p class="text-muted">This page belongs to a different role than the one on your account. If you think that's a mistake, ask an admin to check your role.</p>
+      <a class="btn btn-primary" href="/dashboard/">Go to your dashboard</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

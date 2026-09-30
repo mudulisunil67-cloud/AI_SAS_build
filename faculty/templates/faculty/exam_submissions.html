@@ -1,0 +1,41 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Submissions{% endblock %}
+{% block page_title %}Submissions: {{ exam.title }}{% endblock %}
+{% block page_actions %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'faculty:exam_detail' exam.pk %}">Back to exam</a>{% endblock %}
+{% block content %}
+<div class="stat-strip">
+  <div class="stat"><span class="stat-value">{{ submissions|length }}</span><span class="stat-label">Submitted</span></div>
+  <div class="stat"><span class="stat-value">{{ not_submitted|length }}</span><span class="stat-label">Not submitted</span></div>
+  <div class="stat"><span class="stat-value">{% if average is not None %}{{ average|floatformat:1 }}{% else %}-{% endif %}</span><span class="stat-label">Average score (out of {{ exam.total_marks }})</span></div>
+</div>
+
+<div class="panel panel-flush mb-4">
+  {% if submissions %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Student</th><th>Submitted</th><th>Score</th><th>Status</th><th class="text-end"></th></tr></thead>
+      <tbody>
+      {% for s in submissions %}
+        <tr>
+          <td class="cell-title">{{ s.student.display_name }}</td>
+          <td>{{ s.submitted_at|date:"d M, h:i A" }}</td>
+          <td>{{ s.score|floatformat:"-2" }} / {{ exam.total_marks }} <span class="text-muted small">({{ s.percentage }}%)</span></td>
+          <td><span class="pill pill-{{ s.status }}">{{ s.get_status_display }}</span></td>
+          <td class="text-end"><a class="btn btn-sm {% if s.status == 'submitted' %}btn-primary{% else %}btn-outline-secondary{% endif %}" href="{% url 'faculty:submission_review' s.pk %}">{% if s.status == 'submitted' %}Review and mark{% else %}View or change marks{% endif %}</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty m-3">Nobody has submitted this exam yet.</div>
+  {% endif %}
+</div>
+
+{% if not_submitted %}
+<div class="panel">
+  <div class="panel-head"><h2>Not submitted yet</h2></div>
+  <p class="mb-0">{% for s in not_submitted %}{{ s.display_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Attendance, exams and classes in one place{% endblock %}
+{% block body %}
+{% include 'include/navbar.html' %}
+<div class="flash-fixed">{% include 'include/messages.html' %}</div>
+<main>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <h1>Take attendance in a minute. Grade exams without the paperwork.</h1>
+        <p class="lead">AI SAS gives teachers, students and administrators one place for attendance, exams, daily class notes and meetings.</p>
+        <div class="d-flex flex-wrap gap-2">
+          {% if user.is_authenticated %}
+            <a class="btn btn-accent btn-lg" href="{% url 'dashboard' %}">Open your dashboard</a>
+          {% else %}
+            <a class="btn btn-accent btn-lg" href="{% url 'register' %}">Create an account</a>
+            <a class="btn btn-outline-light btn-lg" href="{% url 'login' %}">Log in</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="register" role="img" aria-label="Sample attendance register for a Physics class showing present, absent and late marks for five students across a week">
+        <div class="register-head"><strong>Physics, Class 10-B</strong><span>Mon to Fri</span></div>
+        <table aria-hidden="true">
+          <thead><tr><th></th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr></thead>
+          <tbody>
+            <tr><th>Aarav Shah</th>
+              <td><span class="reg-cell p" style="--i:0">P</span></td><td><span class="reg-cell p" style="--i:1">P</span></td><td><span class="reg-cell p" style="--i:2">P</span></td><td><span class="reg-cell p" style="--i:3">P</span></td><td><span class="reg-cell p" style="--i:4">P</span></td></tr>
+            <tr><th>Diya Menon</th>
+              <td><span class="reg-cell p" style="--i:5">P</span></td><td><span class="reg-cell l" style="--i:6">L</span></td><td><span class="reg-cell p" style="--i:7">P</span></td><td><span class="reg-cell p" style="--i:8">P</span></td><td><span class="reg-cell p" style="--i:9">P</span></td></tr>
+            <tr><th>Kabir Rao</th>
+              <td><span class="reg-cell a" style="--i:10">A</span></td><td><span class="reg-cell p" style="--i:11">P</span></td><td><span class="reg-cell p" style="--i:12">P</span></td><td><span class="reg-cell a" style="--i:13">A</span></td><td><span class="reg-cell p" style="--i:14">P</span></td></tr>
+            <tr><th>Meera Iyer</th>
+              <td><span class="reg-cell p" style="--i:15">P</span></td><td><span class="reg-cell p" style="--i:16">P</span></td><td><span class="reg-cell p" style="--i:17">P</span></td><td><span class="reg-cell p" style="--i:18">P</span></td><td><span class="reg-cell l" style="--i:19">L</span></td></tr>
+            <tr><th>Rohan Das</th>
+              <td><span class="reg-cell p" style="--i:20">P</span></td><td><span class="reg-cell p" style="--i:21">P</span></td><td><span class="reg-cell a" style="--i:22">A</span></td><td><span class="reg-cell p" style="--i:23">P</span></td><td><span class="reg-cell p" style="--i:24">P</span></td></tr>
+          </tbody>
+        </table>
+        <div class="register-foot">Saved by the teacher. Students see their own row the moment it is marked.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="roles" id="roles">
+    <div class="container">
+      <h2>One portal, with the tools each person actually needs</h2>
+      <div class="role-grid">
+        <div class="role-col">
+          <h3>Teachers</h3>
+          <p class="role-sub">Run the class from one screen.</p>
+          <ul>
+            <li><i class="bi bi-calendar-check"></i>Take attendance by date and course</li>
+            <li><i class="bi bi-pencil-square"></i>Schedule exams with timed questions</li>
+            <li><i class="bi bi-check2-circle"></i>Review answers and give marks</li>
+            <li><i class="bi bi-journal-arrow-up"></i>Upload the day's class notes</li>
+            <li><i class="bi bi-camera-video"></i>Set up meetings with every student</li>
+          </ul>
+        </div>
+        <div class="role-col">
+          <h3>Students</h3>
+          <p class="role-sub">Always know where you stand.</p>
+          <ul>
+            <li><i class="bi bi-stopwatch"></i>Take exams online, with a live timer</li>
+            <li><i class="bi bi-award"></i>See marks and teacher feedback</li>
+            <li><i class="bi bi-graph-up"></i>Track attendance for every course</li>
+            <li><i class="bi bi-journal-text"></i>Open daily class notes any time</li>
+            <li><i class="bi bi-people"></i>Find upcoming meetings</li>
+          </ul>
+        </div>
+        <div class="role-col">
+          <h3>Admins</h3>
+          <p class="role-sub">Keep the whole system in order.</p>
+          <ul>
+            <li><i class="bi bi-person-check"></i>Approve new faculty accounts</li>
+            <li><i class="bi bi-people-fill"></i>Add, edit and deactivate users</li>
+            <li><i class="bi bi-bar-chart"></i>See users, courses and exams at a glance</li>
+            <li><i class="bi bi-envelope-paper"></i>Manage and export subscribers</li>
+            <li><i class="bi bi-shield-lock"></i>Every page is behind a login and a role check</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="subscribe-band" id="subscribe">
+    <div class="container">
+      <div class="row g-4 align-items-center">
+        <div class="col-lg-6">
+          <h2>Get product updates by email</h2>
+          <p class="mb-0">New features and release notes, a few times a year. Unsubscribe whenever you like.</p>
+        </div>
+        <div class="col-lg-6">
+          <form method="post" action="{% url 'subscribe' %}" class="d-flex flex-column flex-sm-row gap-2">
+            {% csrf_token %}
+            <label class="visually-hidden" for="subscribe-email">Email address</label>
+            <input type="email" id="subscribe-email" name="email" class="form-control form-control-lg" placeholder="you@school.edu" required>
+            <button type="submit" class="btn btn-primary btn-lg text-nowrap">Subscribe</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+{% include 'include/footer.html' %}
+{% endblock %}

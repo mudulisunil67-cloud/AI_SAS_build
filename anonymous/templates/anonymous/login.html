@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Log in{% endblock %}
+{% block body %}
+<div class="auth-shell">
+  <aside class="auth-aside">
+    <a class="brand" href="{% url 'home' %}"><span class="brand-mark"><i class="bi bi-check2"></i></span>AI SAS</a>
+    <div>
+      <h2>Your register, marks and class notes are one login away.</h2>
+      <p>Teachers, students and admins each land on their own dashboard.</p>
+    </div>
+  </aside>
+  <section class="auth-main">
+    <div class="auth-box">
+      {% include 'include/messages.html' %}
+      <h1>Log in</h1>
+      <p class="text-muted mb-4">Use the username and password you registered with.</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        {% include 'include/form_fields.html' %}
+        <button class="btn btn-primary w-100 mt-2" type="submit">Log in</button>
+      </form>
+      <p class="mt-4 mb-0">New here? <a href="{% url 'register' %}">Create an account</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}

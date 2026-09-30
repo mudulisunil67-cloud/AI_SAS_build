@@ -1,0 +1,69 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}{{ course.name }}{% endblock %}
+{% block page_title %}{{ course.name }}{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'faculty:course_edit' course.pk %}">Edit</a>
+  <form method="post" action="{% url 'faculty:course_delete' course.pk %}" data-confirm="Delete {{ course.name }}? Its exams, marks, attendance and class entries will be deleted too.">
+    {% csrf_token %}<button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+  </form>
+{% endblock %}
+{% block content %}
+<p class="text-muted">{{ course.code }}{% if course.description %} &middot; {{ course.description }}{% endif %}</p>
+
+<div class="row g-4">
+  <div class="col-xl-8">
+    <div class="panel panel-flush">
+      <div class="panel-head">
+        <h2>Enrolled students ({{ students|length }})</h2>
+        <a href="{% url 'faculty:attendance_report' course.pk %}">Attendance report</a>
+      </div>
+      {% if students %}
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>Student</th><th>Attendance</th><th class="text-end"></th></tr></thead>
+          <tbody>
+          {% for row in students %}
+            <tr>
+              <td><span class="cell-title">{{ row.user.display_name }}</span><span class="cell-sub">{{ row.user.email }}</span></td>
+              <td>{% if row.stats %}<span class="{% if row.stats.percent < 75 %}pct-low{% endif %}">{{ row.stats.percent }}%</span> <span class="text-muted small">({{ row.stats.attended }} of {{ row.stats.total }} days)</span>{% else %}<span class="text-muted">No records yet</span>{% endif %}</td>
+              <td class="text-end">
+                <form method="post" action="{% url 'faculty:course_remove_student' course.pk row.user.pk %}" data-confirm="Remove {{ row.user.display_name }} from this course?">
+                  {% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Remove</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty">No students yet. Students enroll from their "My courses" page.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-xl-4">
+    <div class="panel mb-4">
+      <div class="panel-head"><h2>Exams</h2><a href="{% url 'faculty:exam_create' %}">New</a></div>
+      {% if exams %}
+      <ul class="list-plain">
+        {% for exam in exams %}
+        <li><a class="cell-title" href="{% url 'faculty:exam_detail' exam.pk %}">{{ exam.title }}</a>
+          <span class="cell-sub">{{ exam.scheduled_at|date:"d M Y, h:i A" }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}<div class="empty">No exams yet.</div>{% endif %}
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>Recent classes</h2><a href="{% url 'faculty:material_create' %}">Add</a></div>
+      {% if materials %}
+      <ul class="list-plain">
+        {% for m in materials %}
+        <li><span class="cell-title">{{ m.title }}</span><span class="cell-sub">{{ m.class_date|date:"d M Y" }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}<div class="empty">Nothing uploaded yet.</div>{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

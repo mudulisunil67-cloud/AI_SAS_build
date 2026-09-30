@@ -1,0 +1,83 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Hi, {{ user.first_name|default:user.username }}{% endblock %}
+{% block content %}
+<div class="stat-strip">
+  <div class="stat"><span class="stat-value">{{ course_count }}</span><span class="stat-label">Courses</span></div>
+  <div class="stat {% if overall_attendance is not None and overall_attendance < low_attendance %}warn{% endif %}"><span class="stat-value">{% if overall_attendance is not None %}{{ overall_attendance }}%{% else %}-{% endif %}</span><span class="stat-label">Overall attendance</span></div>
+  <div class="stat"><span class="stat-value">{{ pending_exam_count }}</span><span class="stat-label">Exams to take</span></div>
+</div>
+
+{% if overall_attendance is not None and overall_attendance < low_attendance %}
+<div class="alert alert-warning" role="status">Your attendance is below {{ low_attendance }}%. <a href="{% url 'student:attendance' %}">See the course breakdown</a>.</div>
+{% endif %}
+
+{% if not course_count %}
+<div class="empty">You aren't enrolled in any course yet. <a href="{% url 'student:course_list' %}">Browse courses</a> to get started.</div>
+{% else %}
+<div class="row g-4">
+  <div class="col-xl-7">
+    <div class="panel panel-flush mb-4">
+      <div class="panel-head"><h2>Exams for you</h2><a href="{% url 'student:exam_list' %}">All exams</a></div>
+      {% if upcoming_exams %}
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <tbody>
+          {% for exam in upcoming_exams %}
+            <tr>
+              <td><span class="cell-title">{{ exam.title }}</span><span class="cell-sub">{{ exam.course.name }}</span></td>
+              <td>{{ exam.scheduled_at|date:"D d M, h:i A" }}</td>
+              <td class="text-end">{% if exam.status == 'live' %}<a class="btn btn-sm btn-accent" href="{% url 'student:exam_take' exam.pk %}">Start now</a>{% else %}<span class="pill pill-upcoming">Starts in {{ exam.scheduled_at|timeuntil }}</span>{% endif %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<div class="empty">No exams waiting for you.</div>{% endif %}
+    </div>
+
+    <div class="panel panel-flush">
+      <div class="panel-head"><h2>Latest marks</h2><a href="{% url 'student:marks' %}">All marks</a></div>
+      {% if recent_marks %}
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <tbody>
+          {% for s in recent_marks %}
+            <tr>
+              <td><a class="cell-title" href="{% url 'student:exam_result' s.exam_id %}">{{ s.exam.title }}</a><span class="cell-sub">{{ s.exam.course.name }}</span></td>
+              <td>{{ s.score|floatformat:"-2" }} / {{ s.exam.total_marks }}</td>
+              <td><span class="pill pill-{{ s.status }}">{{ s.get_status_display }}</span></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<div class="empty">Your marks will show up here after you take an exam.</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="col-xl-5">
+    <div class="panel mb-4">
+      <div class="panel-head"><h2>Upcoming meetings</h2><a href="{% url 'student:meetings' %}">All</a></div>
+      {% if meetings %}
+      <ul class="list-plain">
+        {% for m in meetings %}
+        <li><span class="cell-title">{{ m.title }}</span><span class="cell-sub">{{ m.course.name }} &middot; {{ m.scheduled_at|date:"D d M, h:i A" }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}<div class="empty">No meetings coming up.</div>{% endif %}
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>Recent classes</h2><a href="{% url 'student:classes' %}">All</a></div>
+      {% if materials %}
+      <ul class="list-plain">
+        {% for m in materials %}
+        <li><span class="cell-title">{{ m.title }}</span><span class="cell-sub">{{ m.course.name }} &middot; {{ m.class_date|date:"d M Y" }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}<div class="empty">Your teachers haven't uploaded any classes yet.</div>{% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

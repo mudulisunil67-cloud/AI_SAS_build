@@ -1,0 +1,111 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Admin dashboard{% endblock %}
+{% block page_title %}Admin dashboard{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-primary btn-sm" href="{% url 'myadmin:user_create' %}"><i class="bi bi-person-plus"></i> Add user</a>
+{% endblock %}
+{% block content %}
+<div class="stat-strip">
+  <div class="stat"><span class="stat-value">{{ student_count }}</span><span class="stat-label">Students</span></div>
+  <div class="stat"><span class="stat-value">{{ faculty_count }}</span><span class="stat-label">Faculty</span></div>
+  <div class="stat"><span class="stat-value">{{ course_count }}</span><span class="stat-label">Courses</span></div>
+  <div class="stat"><span class="stat-value">{{ subscriber_count }}</span><span class="stat-label">Subscribers</span></div>
+</div>
+
+{% if pending_faculty %}
+<div class="panel mb-4">
+  <div class="panel-head"><h2>Waiting for approval <span class="pill pill-pending">{{ pending_faculty|length }}</span></h2><a href="{% url 'myadmin:user_list' %}?status=pending">See all</a></div>
+  <ul class="list-plain">
+    {% for u in pending_faculty|slice:":5" %}
+    <li class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div>
+        <div class="cell-title">{{ u.display_name }}</div>
+        <span class="cell-sub">{{ u.get_role_display }} &middot; {{ u.email|default:u.username }} &middot; joined {{ u.date_joined|date:"d M Y" }}</span>
+      </div>
+      <form method="post" action="{% url 'myadmin:user_approve' u.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'myadmin:dashboard' %}">
+        <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-check2"></i> Approve</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-5">
+    <div class="panel h-100">
+      <div class="panel-head"><h2>Who is on the platform</h2></div>
+      <div class="chart-box"><canvas id="rolesChart" role="img" aria-label="Users by role"></canvas></div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="panel h-100">
+      <div class="panel-head"><h2>Enrolments in the busiest courses</h2><a href="{% url 'myadmin:course_list' %}">All courses</a></div>
+      {% if chart_data.enrollments.labels %}
+      <div class="chart-box"><canvas id="enrollChart" role="img" aria-label="Students enrolled per course"></canvas></div>
+      {% else %}
+      <div class="empty">No courses yet. Teachers create courses and students enrol in them.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="panel panel-flush">
+      <div class="panel-head"><h2>Newest users</h2><a href="{% url 'myadmin:user_list' %}">Manage users</a></div>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Joined</th></tr></thead>
+          <tbody>
+          {% for u in recent_users %}
+            <tr>
+              <td><a class="cell-title" href="{% url 'myadmin:user_edit' u.pk %}">{{ u.display_name }}</a><span class="cell-sub">{{ u.email|default:u.username }}</span></td>
+              <td>{{ u.get_role_display }}</td>
+              <td>
+                {% if not u.is_active %}<span class="pill pill-inactive">Inactive</span>
+                {% elif not u.is_approved %}<span class="pill pill-pending">Pending</span>
+                {% else %}<span class="pill pill-active">Active</span>{% endif %}
+              </td>
+              <td>{{ u.date_joined|date:"d M Y" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4"><div class="empty">No users yet.</div></td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="panel">
+      <div class="panel-head"><h2>Latest subscribers</h2><a href="{% url 'myadmin:subscriber_list' %}">All subscribers</a></div>
+      {% if recent_subscribers %}
+      <ul class="list-plain">
+        {% for s in recent_subscribers %}
+        <li>
+          <div class="cell-title">{{ s.email }}</div>
+          <span class="cell-sub">{{ s.subscribed_at|date:"d M Y, h:i A" }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="empty">Nobody has subscribed from the front page yet.</div>
+      {% endif %}
+    </div>
+    <div class="panel mt-4">
+      <div class="panel-head"><h2>Activity</h2></div>
+      <ul class="list-plain">
+        <li class="d-flex justify-content-between"><span>Exams scheduled</span><strong>{{ exam_count }}</strong></li>
+        <li class="d-flex justify-content-between"><span>Exam submissions</span><strong>{{ submission_count }}</strong></li>
+      </ul>
+    </div>
+  </div>
+</div>
+{{ chart_data|json_script:"chart-data" }}
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+{% endblock %}

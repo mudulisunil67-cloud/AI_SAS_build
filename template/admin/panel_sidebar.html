@@ -1,0 +1,7 @@
+{% with n=request.resolver_match.url_name %}
+<a href="{% url 'myadmin:dashboard' %}" class="{% if n == 'dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+<a href="{% url 'myadmin:user_list' %}" class="{% if 'user' in n %}active{% endif %}"><i class="bi bi-people"></i> Users</a>
+<a href="{% url 'myadmin:subscriber_list' %}" class="{% if 'subscriber' in n %}active{% endif %}"><i class="bi bi-envelope-paper"></i> Subscribers</a>
+<a href="{% url 'myadmin:course_list' %}" class="{% if 'course' in n %}active{% endif %}"><i class="bi bi-book"></i> Courses</a>
+{% if user.is_staff %}<a href="{% url 'admin:index' %}"><i class="bi bi-database-gear"></i> Database admin</a>{% endif %}
+{% endwith %}

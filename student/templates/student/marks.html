@@ -1,0 +1,31 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Marks{% endblock %}
+{% block page_title %}My marks{% endblock %}
+{% block content %}
+<div class="stat-strip">
+  <div class="stat"><span class="stat-value">{{ submissions|length }}</span><span class="stat-label">Exams taken</span></div>
+  <div class="stat"><span class="stat-value">{% if average is not None %}{{ average }}%{% else %}-{% endif %}</span><span class="stat-label">Average of graded exams</span></div>
+</div>
+<div class="panel panel-flush">
+  {% if submissions %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Exam</th><th>Submitted</th><th>Score</th><th>Status</th><th class="text-end"></th></tr></thead>
+      <tbody>
+      {% for s in submissions %}
+        <tr>
+          <td><span class="cell-title">{{ s.exam.title }}</span><span class="cell-sub">{{ s.exam.course.name }}</span></td>
+          <td>{{ s.submitted_at|date:"d M Y, h:i A" }}</td>
+          <td>{{ s.score|floatformat:"-2" }} / {{ s.exam.total_marks }} <span class="text-muted small">({{ s.percentage }}%)</span></td>
+          <td><span class="pill pill-{{ s.status }}">{{ s.get_status_display }}</span></td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'student:exam_result' s.exam_id %}">Details</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty m-3">No marks yet. <a href="{% url 'student:exam_list' %}">See your exams</a></div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Courses{% endblock %}
+{% block page_title %}Courses{% endblock %}
+{% block page_actions %}<a class="btn btn-primary btn-sm" href="{% url 'faculty:course_create' %}"><i class="bi bi-plus-lg"></i> New course</a>{% endblock %}
+{% block content %}
+<div class="panel panel-flush">
+  {% if courses %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Course</th><th>Students</th><th>Exams</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+      {% for course in courses %}
+        <tr>
+          <td><a class="cell-title" href="{% url 'faculty:course_detail' course.pk %}">{{ course.name }}</a><span class="cell-sub">{{ course.code }}</span></td>
+          <td>{{ course.student_count }}</td>
+          <td>{{ course.exam_count }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'faculty:attendance_report' course.pk %}">Attendance</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'faculty:course_edit' course.pk %}">Edit</a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty m-3">You haven't created a course yet. Students join a course by enrolling, so start with one. <a href="{% url 'faculty:course_create' %}">Create your first course</a></div>
+  {% endif %}
+</div>
+{% endblock %}

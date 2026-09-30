@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <a class="brand" href="{% url 'dashboard' %}"><span class="brand-mark"><i class="bi bi-check2"></i></span>AI SAS</a>
+    <nav class="side-nav">
+      {% if user.role == 'faculty' %}
+        {% include 'facultyincludes/sidebar.html' %}
+      {% elif user.role == 'student' %}
+        {% include 'studentincludes/sidebar.html' %}
+      {% else %}
+        {% include 'admin/panel_sidebar.html' %}
+      {% endif %}
+    </nav>
+    <div class="side-user">
+      <div class="name">{{ user.display_name }}</div>
+      <div class="role">{{ user.get_role_display }}</div>
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit"><i class="bi bi-box-arrow-left"></i> Log out</button>
+      </form>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <div class="app-main">
+    <header class="topbar">
+      <button class="btn btn-outline-primary btn-sm d-lg-none" id="sidebarToggle" type="button" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false"><i class="bi bi-list"></i></button>
+      <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+      <div class="topbar-actions">{% block page_actions %}{% endblock %}</div>
+    </header>
+    <main class="content">
+      {% include 'include/messages.html' %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

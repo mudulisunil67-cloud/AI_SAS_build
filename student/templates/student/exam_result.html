@@ -1,0 +1,39 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Result{% endblock %}
+{% block page_title %}{{ exam.title }}{% endblock %}
+{% block page_actions %}<a class="btn btn-outline-secondary btn-sm" href="{% url 'student:marks' %}">All marks</a>{% endblock %}
+{% block content %}
+<div class="stat-strip">
+  <div class="stat"><span class="stat-value">{{ submission.score|floatformat:"-2" }} / {{ exam.total_marks }}</span><span class="stat-label">Score</span></div>
+  <div class="stat"><span class="stat-value">{{ submission.percentage }}%</span><span class="stat-label">Percentage</span></div>
+  <div class="stat"><span class="stat-value" style="font-size:1.15rem"><span class="pill pill-{{ submission.status }}">{{ submission.get_status_display }}</span></span><span class="stat-label">Status</span></div>
+</div>
+
+{% if submission.status == 'submitted' %}
+<div class="alert alert-warning" role="status">Your written answers are waiting for your teacher. The score above only counts multiple-choice questions so far.</div>
+{% endif %}
+
+{% if submission.feedback %}
+<div class="panel mb-4"><div class="panel-head"><h2>Teacher feedback</h2></div><p class="mb-0">{{ submission.feedback|linebreaksbr }}</p></div>
+{% endif %}
+
+{% if not reveal %}
+<div class="alert alert-info" role="status">Correct answers are shown after the exam window closes at {{ exam.end_time|date:"h:i A, d M" }}.</div>
+{% endif %}
+
+{% for a in answers %}
+<div class="panel mb-3 {% if a.question.question_type == 'mcq' %}{% if reveal %}{% if a.is_correct %}answer-ok{% else %}answer-bad{% endif %}{% endif %}{% elif not a.is_graded %}answer-wait{% endif %}">
+  <div class="d-flex justify-content-between gap-3">
+    <div class="cell-title">{{ forloop.counter }}. {{ a.question.text|linebreaksbr }}</div>
+    <span class="pill">{{ a.marks_awarded|floatformat:"-2" }} / {{ a.question.marks }}</span>
+  </div>
+  {% if a.question.question_type == 'mcq' %}
+    <div class="mt-2">Your answer: {% if a.selected_option %}<strong>{{ a.selected_option }}. {{ a.selected_text }}</strong>{% else %}<em class="text-muted">not answered</em>{% endif %}</div>
+    {% if reveal %}<div class="text-muted small">Correct answer: {{ a.question.correct_option }}. {{ a.question.correct_text }}</div>{% endif %}
+  {% else %}
+    <div class="border rounded p-3 bg-light mt-2">{% if a.text_answer %}{{ a.text_answer|linebreaksbr }}{% else %}<em class="text-muted">No answer written</em>{% endif %}</div>
+    {% if not a.is_graded %}<div class="text-muted small mt-1">Waiting for review</div>{% endif %}
+  {% endif %}
+</div>
+{% endfor %}
+{% endblock %}

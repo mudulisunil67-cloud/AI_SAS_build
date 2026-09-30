@@ -1,0 +1,8 @@
+{% with n=request.resolver_match.url_name %}
+<a href="{% url 'faculty:dashboard' %}" class="{% if n == 'dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+<a href="{% url 'faculty:course_list' %}" class="{% if 'course' in n %}active{% endif %}"><i class="bi bi-book"></i> Courses</a>
+<a href="{% url 'faculty:exam_list' %}" class="{% if 'exam' in n or 'submission' in n %}active{% endif %}"><i class="bi bi-pencil-square"></i> Exams</a>
+<a href="{% url 'faculty:attendance_mark' %}" class="{% if 'attendance' in n %}active{% endif %}"><i class="bi bi-calendar-check"></i> Attendance</a>
+<a href="{% url 'faculty:material_list' %}" class="{% if 'material' in n %}active{% endif %}"><i class="bi bi-journal-text"></i> Daily classes</a>
+<a href="{% url 'faculty:meeting_list' %}" class="{% if 'meeting' in n %}active{% endif %}"><i class="bi bi-camera-video"></i> Meetings</a>
+{% endwith %}

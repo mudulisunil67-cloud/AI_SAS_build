@@ -1,0 +1,64 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Attendance{% endblock %}
+{% block page_title %}My attendance{% endblock %}
+{% block content %}
+<div class="panel panel-flush mb-4">
+  <div class="panel-head"><h2>By course</h2></div>
+  {% if summary %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Course</th><th>Present</th><th>Late</th><th>Absent</th><th style="min-width:180px">Attendance</th></tr></thead>
+      <tbody>
+      {% for row in summary %}
+        <tr>
+          <td><span class="cell-title">{{ row.course.name }}</span><span class="cell-sub">{{ row.total }} day{{ row.total|pluralize }} recorded</span></td>
+          <td>{{ row.present }}</td>
+          <td>{{ row.late }}</td>
+          <td>{{ row.absent }}</td>
+          <td>
+            {% if row.percent is not None %}
+              <div class="d-flex align-items-center gap-2">
+                <div class="meter {% if row.percent < low_attendance %}low{% endif %} flex-grow-1" role="progressbar" aria-valuenow="{{ row.percent }}" aria-valuemin="0" aria-valuemax="100"><span style="width: {{ row.percent }}%"></span></div>
+                <span class="{% if row.percent < low_attendance %}pct-low{% endif %}">{{ row.percent }}%</span>
+              </div>
+            {% else %}<span class="text-muted">No records yet</span>{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="px-3 pb-3 small text-muted">Late counts as attended. Below {{ low_attendance }}% is shown in red.</div>
+  {% else %}
+  <div class="empty">You aren't enrolled in any course yet. <a href="{% url 'student:course_list' %}">Browse courses</a></div>
+  {% endif %}
+</div>
+
+<div class="panel panel-flush">
+  <div class="panel-head">
+    <h2>Day by day</h2>
+    <form method="get">
+      <label class="visually-hidden" for="course">Filter by course</label>
+      <select class="form-select form-select-sm" id="course" name="course" onchange="this.form.submit()">
+        <option value="">All courses</option>
+        {% for c in courses %}<option value="{{ c.pk }}" {% if selected_course == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+      </select>
+    </form>
+  </div>
+  {% if page_obj.object_list %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Date</th><th>Course</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for r in page_obj %}
+        <tr><td>{{ r.date|date:"D, d M Y" }}</td><td>{{ r.course.name }}</td><td><span class="pill pill-{{ r.status }}">{{ r.get_status_display }}</span></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">No attendance has been recorded for you yet.</div>
+  {% endif %}
+</div>
+<div class="px-1">{% include 'include/pagination.html' %}</div>
+{% endblock %}

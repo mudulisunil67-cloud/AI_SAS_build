@@ -1,0 +1,41 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}{{ exam.title }}{% endblock %}
+{% block page_title %}{{ exam.title }}{% endblock %}
+{% block page_actions %}
+  <div class="exam-timer" id="exam-timer" data-seconds="{{ seconds_left }}" role="timer" aria-live="off">
+    <i class="bi bi-stopwatch"></i> <span id="exam-timer-text">--:--</span>
+  </div>
+{% endblock %}
+{% block content %}
+<form method="post" id="exam-form" novalidate>
+  {% csrf_token %}
+  <div class="panel mb-3">
+    <div class="text-muted">{{ exam.course.name }} &middot; {{ questions|length }} question{{ questions|length|pluralize }} &middot; {{ exam.total_marks }} marks</div>
+    {% if exam.instructions %}<p class="mt-2 mb-0">{{ exam.instructions|linebreaksbr }}</p>{% endif %}
+    <p class="small text-muted mt-2 mb-0">The exam submits automatically when the timer reaches zero. Answers are only saved when you submit.</p>
+  </div>
+
+  {% for q in questions %}
+  <div class="panel question mb-3">
+    <div class="d-flex justify-content-between gap-3 mb-2">
+      <h2 class="h6 mb-0">Question {{ forloop.counter }}</h2>
+      <span class="pill">{{ q.marks }} mark{{ q.marks|pluralize }}</span>
+    </div>
+    <p>{{ q.text|linebreaksbr }}</p>
+    {% if q.question_type == 'mcq' %}
+      {% for letter, text in q.choices %}
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="q_{{ q.pk }}" id="q{{ q.pk }}{{ letter }}" value="{{ letter }}">
+        <label class="form-check-label w-100" for="q{{ q.pk }}{{ letter }}">{{ letter }}. {{ text }}</label>
+      </div>
+      {% endfor %}
+    {% else %}
+      <label class="visually-hidden" for="q{{ q.pk }}">Your answer to question {{ forloop.counter }}</label>
+      <textarea class="form-control" id="q{{ q.pk }}" name="q_{{ q.pk }}" rows="5" placeholder="Write your answer here"></textarea>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <button type="submit" class="btn btn-primary btn-lg">Submit exam</button>
+</form>
+{% endblock %}

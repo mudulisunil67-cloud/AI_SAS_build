@@ -1,0 +1,64 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Welcome back, {{ user.first_name|default:user.username }}{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-primary btn-sm" href="{% url 'faculty:attendance_mark' %}"><i class="bi bi-calendar-check"></i> Take attendance</a>
+{% endblock %}
+{% block content %}
+<div class="stat-strip">
+  <div class="stat"><span class="stat-value">{{ course_count }}</span><span class="stat-label">Courses</span></div>
+  <div class="stat"><span class="stat-value">{{ student_count }}</span><span class="stat-label">Students</span></div>
+  <div class="stat"><span class="stat-value">{{ exam_count }}</span><span class="stat-label">Exams</span></div>
+  <div class="stat {% if pending_reviews %}warn{% endif %}"><span class="stat-value">{{ pending_reviews }}</span><span class="stat-label">Answers to review</span></div>
+</div>
+
+{% if attendance_pending %}
+<div class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2" role="status">
+  <span>Attendance for {{ today|date:"D, d M" }} is not taken yet for {% for c in attendance_pending %}<strong>{{ c.name }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}.</span>
+  <a class="btn btn-sm btn-primary" href="{% url 'faculty:attendance_mark' %}">Take attendance</a>
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-xl-7">
+    <div class="panel panel-flush">
+      <div class="panel-head"><h2>Upcoming exams</h2><a href="{% url 'faculty:exam_list' %}">All exams</a></div>
+      {% if upcoming_exams %}
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>Exam</th><th>Starts</th><th>Status</th></tr></thead>
+          <tbody>
+          {% for exam in upcoming_exams %}
+            <tr>
+              <td><a class="cell-title" href="{% url 'faculty:exam_detail' exam.pk %}">{{ exam.title }}</a><span class="cell-sub">{{ exam.course.name }}</span></td>
+              <td>{{ exam.scheduled_at|date:"D d M, h:i A" }}</td>
+              <td><span class="pill pill-{{ exam.status }}">{{ exam.status|capfirst }}</span>{% if not exam.is_published %} <span class="pill pill-draft">Draft</span>{% endif %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty">No exams coming up. <a href="{% url 'faculty:exam_create' %}">Schedule an exam</a></div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-xl-5">
+    <div class="panel">
+      <div class="panel-head"><h2>Upcoming meetings</h2><a href="{% url 'faculty:meeting_list' %}">All meetings</a></div>
+      {% if meetings %}
+      <ul class="list-plain">
+        {% for m in meetings %}
+        <li>
+          <div class="cell-title">{{ m.title }}</div>
+          <span class="cell-sub">{{ m.course.name }} &middot; {{ m.scheduled_at|date:"D d M, h:i A" }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="empty">No meetings scheduled. <a href="{% url 'faculty:meeting_create' %}">Schedule a meeting</a></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

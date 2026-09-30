@@ -1,0 +1,56 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}My courses{% endblock %}
+{% block page_title %}My courses{% endblock %}
+{% block content %}
+<div class="panel panel-flush mb-4">
+  <div class="panel-head"><h2>Enrolled</h2></div>
+  {% if enrolled %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Course</th><th>Teacher</th><th class="text-end"></th></tr></thead>
+      <tbody>
+      {% for c in enrolled %}
+        <tr>
+          <td><span class="cell-title">{{ c.name }}</span><span class="cell-sub">{{ c.code }}</span></td>
+          <td>{{ c.teacher.display_name }}</td>
+          <td class="text-end">
+            <form method="post" action="{% url 'student:course_leave' c.pk %}" data-confirm="Leave {{ c.name }}? Your past attendance stays on record.">
+              {% csrf_token %}<button class="btn btn-sm btn-outline-danger" type="submit">Leave</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">You haven't enrolled in a course yet. Pick one below.</div>
+  {% endif %}
+</div>
+
+<div class="panel panel-flush">
+  <div class="panel-head"><h2>Available to join</h2></div>
+  {% if available %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Course</th><th>Teacher</th><th class="text-end"></th></tr></thead>
+      <tbody>
+      {% for c in available %}
+        <tr>
+          <td><span class="cell-title">{{ c.name }}</span><span class="cell-sub">{{ c.code }}{% if c.description %} &middot; {{ c.description|truncatechars:80 }}{% endif %}</span></td>
+          <td>{{ c.teacher.display_name }}</td>
+          <td class="text-end">
+            <form method="post" action="{% url 'student:course_enroll' c.pk %}">
+              {% csrf_token %}<button class="btn btn-sm btn-primary" type="submit">Enroll</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">No other courses are open right now.</div>
+  {% endif %}
+</div>
+{% endblock %}

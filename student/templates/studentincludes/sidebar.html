@@ -1,0 +1,9 @@
+{% with n=request.resolver_match.url_name %}
+<a href="{% url 'student:dashboard' %}" class="{% if n == 'dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+<a href="{% url 'student:course_list' %}" class="{% if 'course' in n %}active{% endif %}"><i class="bi bi-book"></i> My courses</a>
+<a href="{% url 'student:exam_list' %}" class="{% if 'exam' in n %}active{% endif %}"><i class="bi bi-pencil-square"></i> Exams</a>
+<a href="{% url 'student:marks' %}" class="{% if n == 'marks' %}active{% endif %}"><i class="bi bi-award"></i> Marks</a>
+<a href="{% url 'student:attendance' %}" class="{% if n == 'attendance' %}active{% endif %}"><i class="bi bi-calendar-check"></i> Attendance</a>
+<a href="{% url 'student:classes' %}" class="{% if n == 'classes' %}active{% endif %}"><i class="bi bi-journal-text"></i> Daily classes</a>
+<a href="{% url 'student:meetings' %}" class="{% if n == 'meetings' %}active{% endif %}"><i class="bi bi-camera-video"></i> Meetings</a>
+{% endwith %}

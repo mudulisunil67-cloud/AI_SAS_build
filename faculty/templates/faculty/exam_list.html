@@ -1,0 +1,32 @@
+{% extends 'dashboard_base.html' %}
+{% block title %}Exams{% endblock %}
+{% block page_title %}Exams{% endblock %}
+{% block page_actions %}<a class="btn btn-primary btn-sm" href="{% url 'faculty:exam_create' %}"><i class="bi bi-plus-lg"></i> Schedule exam</a>{% endblock %}
+{% block content %}
+<div class="panel panel-flush">
+  {% if exams %}
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Exam</th><th>Starts</th><th>Duration</th><th>Status</th><th>Submissions</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+      {% for exam in exams %}
+        <tr>
+          <td><a class="cell-title" href="{% url 'faculty:exam_detail' exam.pk %}">{{ exam.title }}</a><span class="cell-sub">{{ exam.course.name }}</span></td>
+          <td>{{ exam.scheduled_at|date:"d M Y, h:i A" }}</td>
+          <td>{{ exam.duration_minutes }} min</td>
+          <td><span class="pill pill-{{ exam.status }}">{{ exam.status|capfirst }}</span> {% if exam.is_published %}<span class="pill pill-active">Published</span>{% else %}<span class="pill pill-draft">Draft</span>{% endif %}</td>
+          <td>{{ exam.submission_count }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'faculty:exam_submissions' exam.pk %}">Review</a>
+            <a class="btn btn-sm btn-outline-secondary" href="{% url 'faculty:exam_detail' exam.pk %}">Open</a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty m-3">No exams yet. <a href="{% url 'faculty:exam_create' %}">Schedule your first exam</a></div>
+  {% endif %}
+</div>
+{% endblock %}
